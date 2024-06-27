@@ -4,19 +4,18 @@ using UnityEngine;
 
 public class PlayerScript : MonoBehaviour
 {
-    public float speed = 10.0f;
-    public float jumpForce = 5.0f;
-    public float mouseSensitivity = 100.0f;
+    public float speed = 20.0f;
+    public float jumpHeight = 1.0f;
+    public float gravity = -9.81f;
     public Transform cameraTransform;
 
+    private CharacterController controller;
+    private Vector3 velocity;
     private bool isGrounded;
-    private float xRotation = 0.0f;
-    private Rigidbody rb;
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        controller = GetComponent<CharacterController>();
         Cursor.lockState = CursorLockMode.Locked;
     }
 
@@ -24,16 +23,18 @@ public class PlayerScript : MonoBehaviour
     void Update()
     {
         Rotate();
-        Jump();
     }
 
     void FixedUpdate()
     {
         Move();
+        ApplyGravity();
     }
 
     void Move()
     {
+        isGrounded = controller.isGrounded;
+
         // Get input from keyboard
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
@@ -41,29 +42,32 @@ public class PlayerScript : MonoBehaviour
         // Calculate movement direction
         Vector3 movement = transform.right * moveHorizontal + transform.forward * moveVertical;
 
-        // Move player by adding to rigidbody position
-        rb.MovePosition(rb.position + movement * speed * Time.fixedDeltaTime);
-    }
+        controller.Move(movement * speed * Time.fixedDeltaTime);
 
-    void Jump()
-    {
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGrounded = false;
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
         }
     }
 
     void Rotate()
     {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        float mouseX = Input.GetAxis("Mouse X") * speed * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * speed * Time.deltaTime;
 
-        xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
-
+        cameraTransform.Rotate(Vector3.left * mouseY);
         transform.Rotate(Vector3.up * mouseX);
-        cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+    }
+
+    void ApplyGravity()
+    {
+        if (isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+        }
+
+        velocity.y += gravity * Time.fixedDeltaTime;
+        controller.Move(velocity * Time.fixedDeltaTime);
     }
 
     void OnCollisionEnter(Collision collision)
