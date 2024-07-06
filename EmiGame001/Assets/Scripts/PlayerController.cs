@@ -5,9 +5,10 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public float speedOfPlayer = 20.0f;
+    public float jumpHeight = 2.0f;
+    public float gravityAcceleration = -10.0f;
 
-    private float speedOfGravity = -10.0f;
-    private float jumpSpeed = 10.0f;
+    private float jumpSpeed;
     private float verticalSpeed = 0.0f;
 
     private CharacterController controller;
@@ -16,6 +17,8 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        jumpSpeed = Mathf.Sqrt(2 * Mathf.Abs(gravityAcceleration) * jumpHeight);
+
     }
 
     // Update is called once per frame
@@ -27,6 +30,8 @@ public class PlayerController : MonoBehaviour
 
         if (controller.isGrounded)
         {
+            //verticalSpeed = 0.0f;
+
             //Debug.Log("Grounded!");
             if (Input.GetButtonDown("Jump"))
             {
@@ -35,7 +40,7 @@ public class PlayerController : MonoBehaviour
             }
         } else
         {
-            verticalSpeed += speedOfGravity * Time.deltaTime;
+            verticalSpeed += gravityAcceleration * Time.deltaTime;
         }
 
         Vector3 movement = new Vector3 (horizontal, 0.0f, vertical).normalized * speedOfPlayer;

@@ -553,6 +553,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speedOfPlayer: 20
+  jumpHeight: 2
+  gravityAcceleration: -20
 --- !u!143 &1893024052
 CharacterController:
   m_ObjectHideFlags: 0
